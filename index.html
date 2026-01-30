@@ -1,0 +1,414 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Moon, Sun, Clock, Heart, Users, CheckCircle, ArrowRight, Monitor, Coffee, Zap, MessageCircle, X, Layout, Scissors, FileText, BarChart3, ShieldAlert, Sparkles, TrendingUp } from 'lucide-react';
+
+/**
+ * 共通コンポーネント: フェードインアニメーション
+ */
+const FadeInSection = ({ children, delay = 0 }) => {
+  const [isVisible, setVisible] = useState(false);
+  const domRef = useRef();
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) setVisible(true);
+      });
+    }, { threshold: 0.1 });
+    if (domRef.current) observer.observe(domRef.current);
+    return () => {
+      if (domRef.current) observer.unobserve(domRef.current);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={domRef}
+      className={`transition-all duration-1000 ease-out transform ${
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+      }`}
+      style={{ transitionDelay: `${delay}ms` }}
+    >
+      {children}
+    </div>
+  );
+};
+
+/**
+ * モーダルコンポーネント
+ */
+const DetailModal = ({ isOpen, onClose, content }) => {
+  if (!isOpen || !content) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      <div 
+        className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300"
+        onClick={onClose}
+      ></div>
+      <div className="relative bg-white dark:bg-slate-800 w-full max-w-lg rounded-[2rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
+        <div className="p-8">
+          <div className="flex justify-between items-start mb-6">
+            <h3 className="text-2xl font-black text-slate-800 dark:text-white">{content.title}</h3>
+            <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full transition-colors">
+              <X size={24} />
+            </button>
+          </div>
+          <div className="space-y-4 text-slate-600 dark:text-slate-300 leading-relaxed">
+            {content.details.map((detail, i) => (
+              <div key={i} className="flex gap-3">
+                <CheckCircle className="text-rose-400 shrink-0 mt-1" size={18} />
+                <p>{detail}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-10">
+            <button 
+              onClick={() => {
+                onClose();
+                document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="w-full py-4 bg-rose-500 text-white rounded-xl font-black shadow-lg shadow-rose-200 dark:shadow-none hover:bg-rose-600 transition-all"
+            >
+              このプランについて相談する
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default function App() {
+  const [darkMode, setDarkMode] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+
+  const toggleDarkMode = () => setDarkMode(!darkMode);
+
+  const scrollToContact = (e) => {
+    if (e) e.preventDefault();
+    const contactSection = document.getElementById('contact');
+    if (contactSection) contactSection.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const planDetails = {
+    community: {
+      title: "もくもく習慣化コミュニティ",
+      details: [
+        "平日の朝・夜に定期オンライン作業会を開催。",
+        "メンバー同士のスキル可視化とマッチング支援。",
+        "「一人だとサボる」を解消する進捗報告システム。",
+        "気軽に相談できる専用コミュニケーションツール。"
+      ]
+    },
+    standard: {
+      title: "スタンダード伴走プラン",
+      details: [
+        "週1回（60分）の作戦会議でネクストアクションを明確化。",
+        "チャットによる24時間以内の返信相談サポート。",
+        "タスク管理・進捗管理の代行で制作に集中できる環境作り。",
+        "あなたのフェーズに合わせたオーダーメイドの課題解決。"
+      ]
+    }
+  };
+
+  return (
+    <div className={darkMode ? 'dark' : ''}>
+      <div className="min-h-screen font-sans text-slate-700 bg-white dark:bg-slate-900 dark:text-slate-300 transition-colors duration-500">
+        
+        <DetailModal 
+          isOpen={!!selectedPlan} 
+          onClose={() => setSelectedPlan(null)} 
+          content={selectedPlan ? planDetails[selectedPlan] : null} 
+        />
+
+        {/* --- Header --- */}
+        <header className="fixed w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-rose-100 dark:border-slate-800">
+          <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div className="font-bold text-xl tracking-[0.15em] text-rose-400 dark:text-rose-300">NOW&GLOW</div>
+            <div className="flex items-center gap-4">
+              <button onClick={scrollToContact} className="hidden md:block text-sm font-black text-rose-400 hover:text-rose-500 transition-colors">相談する</button>
+              <button onClick={toggleDarkMode} className="p-2 rounded-full bg-rose-50 dark:bg-slate-800 text-rose-400">{darkMode ? <Sun size={18} /> : <Moon size={18} />}</button>
+            </div>
+          </div>
+        </header>
+
+        {/* --- Hero --- */}
+        <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
+          <div className="absolute inset-0 z-0">
+            {/* 温かみのあるデスク・パソコン・コーヒーの背景画像 */}
+            <img 
+              src="https://images.unsplash.com/photo-1499750310107-5fef28a66643?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" 
+              alt="Warm Workspace with Coffee and Laptop" 
+              className="w-full h-full object-cover" 
+            />
+            {/* グラデーションオーバーレイで文字の視認性を確保しつつ温かみを維持 */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/80 to-white dark:from-slate-900/60 dark:via-slate-900/90 dark:to-slate-900"></div>
+          </div>
+          <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
+            <FadeInSection>
+              <div className="inline-block px-4 py-1.5 mb-6 rounded-full bg-rose-100/50 dark:bg-rose-900/30 text-rose-500 dark:text-rose-300 text-sm font-bold tracking-widest border border-rose-200/50">FOR CREATIVE PARTNERSHIP</div>
+              <h1 className="text-5xl md:text-7xl font-extrabold leading-[1.15] mb-8 text-slate-800 dark:text-white">
+                先生じゃない。<br />この1本を完成させる<br />
+                <span className="relative inline-block">
+                  <span className="relative z-10 text-rose-500">パートナーです。</span>
+                  <span className="absolute bottom-2 left-0 w-full h-4 bg-rose-100 dark:bg-rose-900/50 -z-10"></span>
+                </span>
+              </h1>
+              <div className="text-lg md:text-xl leading-relaxed mb-12 max-w-2xl mx-auto text-slate-600 dark:text-slate-300 font-medium">
+                必要なのは知識ではなく、隣で共に走る「環境」と「強制力」。<br />あなたの悩む時間を買い取り、本業に集中できる時間をお返しします。
+              </div>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="#contact" onClick={scrollToContact} className="group px-10 py-5 bg-rose-400 hover:bg-rose-500 text-white rounded-full font-bold shadow-xl shadow-rose-200/50 dark:shadow-none transition-all flex items-center gap-2 text-lg">
+                  まずは無料で作戦会議 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                </a>
+              </div>
+            </FadeInSection>
+          </div>
+        </section>
+
+        {/* --- Section 2: Why you can't move --- */}
+        <section className="py-24 bg-white dark:bg-slate-900">
+          <div className="max-w-5xl mx-auto px-6">
+            <FadeInSection>
+              <div className="text-center mb-16">
+                <h2 className="text-3xl md:text-4xl font-black text-slate-800 dark:text-white">
+                  あなたが「動けない」本当の理由
+                </h2>
+                <div className="w-24 h-1 bg-rose-400 mx-auto mt-6"></div>
+              </div>
+              
+              <div className="grid md:grid-cols-3 gap-8">
+                <div className="p-8 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700">
+                  <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-xl flex items-center justify-center text-rose-500 mb-6">
+                    <ShieldAlert size={24} />
+                  </div>
+                  <h3 className="font-bold text-lg mb-4 text-slate-800 dark:text-white">モチベーションの低下</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    制作で手が止まる最大の壁は、技術不足ではなく「モチベーション（20.4%）」と「実行の孤独」です。
+                  </p>
+                </div>
+                
+                <div className="p-8 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700">
+                  <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-xl flex items-center justify-center text-rose-500 mb-6">
+                    <Clock size={24} />
+                  </div>
+                  <h3 className="font-bold text-lg mb-4 text-slate-800 dark:text-white">機会損失コストの発生</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    ノウハウは溢れているのに、一人で試行錯誤して気づけば数時間が過ぎている。それは本来稼げたはずの時間の損失です。
+                  </p>
+                </div>
+
+                <div className="p-8 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-slate-100 dark:border-slate-700">
+                  <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 rounded-xl flex items-center justify-center text-rose-500 mb-6">
+                    <BarChart3 size={24} />
+                  </div>
+                  <h3 className="font-bold text-lg mb-4 text-slate-800 dark:text-white">外注リスクへの不安</h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                    月20〜50万の高額外注に頼んで「思っていたのと違う」と後悔したくない。そんなあなたのための「第3の選択肢（Done With You）」です。
+                  </p>
+                </div>
+              </div>
+            </FadeInSection>
+          </div>
+        </section>
+
+        {/* --- Service Menu (Main Plans) --- */}
+        <section className="py-32 bg-slate-50 dark:bg-slate-900 transition-colors">
+          <div className="max-w-6xl mx-auto px-6">
+            <FadeInSection>
+              <div className="text-center mb-20">
+                <h2 className="text-4xl font-black text-slate-800 dark:text-white">伴走サポートメニュー</h2>
+                <p className="mt-4 text-slate-500 italic">あなたの「動けない」を解決するプラン</p>
+              </div>
+            </FadeInSection>
+
+            <div className="grid md:grid-cols-3 gap-8 mb-32">
+              <FadeInSection delay={0}>
+                <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-700 h-full flex flex-col hover:shadow-xl transition-shadow">
+                  <h3 className="font-bold text-xl mb-4 text-slate-800 dark:text-white">もくもく習慣化<br/>コミュニティ</h3>
+                  <div className="text-4xl font-black text-rose-500 my-6">¥3,000<span className="text-sm text-slate-400 font-normal ml-1">/月</span></div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 flex-grow leading-relaxed">孤独を解消し、仲間と繋がって楽しく作業を続けたい方へ. 同じ志を持つメンバーと「書く」「作る」時間を共有します。</p>
+                  <button onClick={() => setSelectedPlan('community')} className="w-full py-3 rounded-xl border border-rose-300 text-rose-400 font-bold hover:bg-rose-50 dark:hover:bg-slate-700 transition-all">詳細を見る</button>
+                </div>
+              </FadeInSection>
+              
+              <FadeInSection delay={150}>
+                <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-2xl border-2 border-rose-200 dark:border-slate-600 h-full flex flex-col relative transform md:-translate-y-6">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-rose-500 text-white px-4 py-1.5 rounded-full text-xs font-black tracking-widest">RECOMMENDED</div>
+                  <h3 className="font-bold text-xl mb-4 text-slate-800 dark:text-white">お試し1回伴走</h3>
+                  <div className="text-4xl font-black text-rose-500 my-6">¥5,000<span className="text-sm text-slate-400 font-normal ml-1">/単発</span></div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 flex-grow leading-relaxed">60分間の集中伴走. その場で「1本完成させる」スピード感と、並走者がいる安心感を体験してみたい方へ。</p>
+                  <button onClick={() => scrollToContact()} className="w-full py-4 rounded-xl bg-rose-500 text-white font-black hover:bg-rose-600 transition-all">今すぐ申し込む</button>
+                </div>
+              </FadeInSection>
+
+              <FadeInSection delay={300}>
+                <div className="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-700 h-full flex flex-col hover:shadow-xl transition-shadow">
+                  <h3 className="font-bold text-xl mb-4 text-slate-800 dark:text-white">スタンダード<br/>伴走プラン</h3>
+                  <div className="text-4xl font-black text-rose-500 my-6">¥35,000<span className="text-sm text-slate-400 font-normal ml-1">/月</span></div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-8 flex-grow leading-relaxed">週1回の通話＋チャット相談. 発信を「完全に習慣化」させ、ビジネスを一段上のフェーズへ押し上げます。</p>
+                  <button onClick={() => setSelectedPlan('standard')} className="w-full py-3 rounded-xl border border-rose-300 text-rose-400 font-bold hover:bg-rose-50 dark:hover:bg-slate-700 transition-all">詳細を見る</button>
+                </div>
+              </FadeInSection>
+            </div>
+
+            {/* --- Project Work (Spot Menus) --- */}
+            <FadeInSection>
+              <div className="relative">
+                <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-6 py-2 rounded-full text-sm font-bold tracking-widest z-10">
+                  SPOT CREATIVE MENU
+                </div>
+                <div className="grid lg:grid-cols-5 gap-8 bg-white dark:bg-slate-800 rounded-[3rem] p-10 shadow-sm border border-slate-100 dark:border-slate-700">
+                  <div className="lg:col-span-2 p-8 bg-rose-50/50 dark:bg-slate-900/50 rounded-[2rem] border-2 border-rose-100 dark:border-rose-900/30 relative overflow-hidden group">
+                    <Layout className="absolute -bottom-4 -right-4 text-rose-100 dark:text-rose-900/20 group-hover:scale-110 transition-transform" size={120} />
+                    <div className="relative z-10">
+                      <h3 className="text-2xl font-black mb-2 flex items-center gap-2 text-slate-800 dark:text-white">
+                        <Monitor className="text-rose-500" size={24} /> ウェブ制作
+                      </h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">構成からデザイン、公開まで丸ごと伴走. LP・ホームページ制作をプロのクオリティで。</p>
+                      <div className="text-2xl font-black text-rose-500 mb-2">¥100,000〜 <span className="text-xs font-normal text-slate-400">/ 1件</span></div>
+                      <div className="inline-block px-3 py-1 bg-rose-500 text-white text-[10px] font-bold rounded-lg uppercase">Contact for Quote</div>
+                    </div>
+                  </div>
+                  <div className="lg:col-span-3 flex flex-col justify-center space-y-6 lg:pl-8">
+                    <h3 className="text-xl font-bold flex items-center gap-2 text-slate-800 dark:text-white">
+                      <Scissors className="text-slate-400" size={20} /> クリエイティブ代行・運用
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {[
+                        { icon: <MessageCircle size={16}/>, title: "SNS画像・名刺", price: "¥3,000〜" },
+                        { icon: <Zap size={16}/>, title: "動画編集・リール制作", price: "¥10,000〜" },
+                        { icon: <FileText size={16}/>, title: "資料ブラッシュアップ", price: "¥3,000〜" },
+                        { icon: <CheckCircle size={16}/>, title: "公式LINE構築サポート", price: "ASK" }
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-transparent hover:border-rose-100 transition-all">
+                          <div className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
+                            <span className="text-rose-400">{item.icon}</span>
+                            {item.title}
+                          </div>
+                          <div className="text-rose-500 font-black text-sm">{item.price}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </FadeInSection>
+          </div>
+        </section>
+
+        {/* --- Section 4: Value Proposition (Time Saver) --- */}
+        <section className="py-24 bg-rose-50/30 dark:bg-slate-900 transition-colors">
+          <div className="max-w-5xl mx-auto px-6">
+            <FadeInSection>
+              <div className="flex flex-col md:flex-row items-center gap-12 bg-white dark:bg-slate-800 rounded-[3rem] p-10 md:p-16 text-slate-800 dark:text-white relative overflow-hidden shadow-xl shadow-rose-100/30 dark:shadow-none border border-rose-100/50 dark:border-slate-700">
+                <div className="absolute -top-10 -right-10 p-10 opacity-5 dark:opacity-10">
+                  <TrendingUp size={400} className="text-rose-400" />
+                </div>
+                <div className="md:w-1/2 relative z-10">
+                  <div className="inline-block px-4 py-1 mb-6 rounded-full bg-rose-50 dark:bg-rose-900/30 text-rose-500 dark:text-rose-300 text-xs font-bold tracking-widest border border-rose-100 dark:border-rose-800 uppercase">Value Proposition</div>
+                  <h2 className="text-3xl md:text-4xl font-black mb-6 leading-tight">
+                    タイムセーバー<br /><span className="text-rose-500">（時間の節約者）</span>
+                  </h2>
+                  <div className="relative py-4 mb-8">
+                    <p className="text-xl md:text-2xl font-bold leading-relaxed text-slate-800 dark:text-white">
+                      私は凄腕のクリエイターでは<br />
+                      ありません。<br />
+                      <span className="text-rose-500 underline decoration-rose-200 decoration-4 underline-offset-8">「あなたの行動を止めない」</span><br />
+                      プロです。
+                    </p>
+                  </div>
+                  <div className="space-y-4">
+                    <div className="flex gap-4">
+                      <div className="mt-1 text-rose-500 font-bold">01</div>
+                      <p className="text-sm text-slate-600 dark:text-slate-300"><span className="text-slate-800 dark:text-white font-bold">経済的な合理性：</span>あなたが一人で20時間悩むのは、時給5,000円なら10万円の損失です。私と5時間で終わらせれば、実質4.5万円以上の利益を生みます。</p>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="mt-1 text-rose-500 font-bold">02</div>
+                      <p className="text-sm text-slate-600 dark:text-slate-300"><span className="text-slate-800 dark:text-white font-bold">客観的視点：</span>独学者の51.3%が感じる「自己満足の限界」を、対話によるフィードバックで突破します。</p>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="mt-1 text-rose-500 font-bold">03</div>
+                      <p className="text-sm text-slate-600 dark:text-slate-300"><span className="text-slate-800 dark:text-white font-bold">物理的な完成：</span>その場で画面を共有し、CanvaやSNS、資料を「1本完成」まで導きます。</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="md:w-1/2 bg-rose-50/40 dark:bg-slate-900/50 backdrop-blur-sm p-8 rounded-3xl border border-rose-100 dark:border-slate-700 relative z-10">
+                  <div className="text-center">
+                    <div className="text-slate-400 text-xs mb-2">悩み続ける20時間</div>
+                    <div className="text-slate-400 text-3xl font-black mb-6 line-through decoration-rose-400">¥100,000 <span className="text-xs font-normal">の損失</span></div>
+                    <div className="flex justify-center mb-6 text-rose-400">
+                      <ArrowRight size={32} className="rotate-90 md:rotate-0" />
+                    </div>
+                    <div className="text-rose-600 dark:text-rose-400 text-xs mb-2">伴走で解決する5時間</div>
+                    <div className="text-slate-800 dark:text-white text-4xl font-black mb-2">¥55,000 <span className="text-xs font-normal text-rose-500">の価値向上</span></div>
+                    <div className="text-[10px] text-slate-400 mt-4">※時給5,000円換算のシミュレーション</div>
+                  </div>
+                </div>
+              </div>
+            </FadeInSection>
+          </div>
+        </section>
+
+        {/* --- My Thought --- */}
+        <section className="py-32 bg-white dark:bg-slate-900">
+          <div className="max-w-4xl mx-auto px-6">
+            <FadeInSection>
+              <div className="relative p-10 md:p-16 bg-slate-50 dark:bg-slate-800 rounded-[3rem] overflow-hidden shadow-sm border border-rose-100 dark:border-rose-900/20">
+                <Heart className="absolute -top-10 -right-10 text-rose-200 dark:text-rose-900/20 opacity-40" size={240} />
+                <div className="relative z-10 flex flex-col gap-8">
+                  <div className="inline-block px-4 py-1 self-start rounded-full bg-rose-500 text-white text-xs font-bold tracking-widest">MESSAGE</div>
+                  <h2 className="text-3xl md:text-4xl font-black text-slate-800 dark:text-white leading-tight">私の想い</h2>
+                  <div className="space-y-8 text-slate-600 dark:text-slate-300 leading-relaxed text-lg">
+                    <p>私自身、日々悩みながら制作し、投稿を続けている現役の「発信者」です。</p>
+                    <div className="relative py-8 px-6 md:px-10 bg-white dark:bg-slate-900/60 rounded-2xl shadow-sm border-l-8 border-rose-400">
+                      <p className="text-rose-600 dark:text-rose-400 font-black text-xl md:text-2xl leading-relaxed">
+                        だからこそ、あなたの「手が止まってしまう苦しさ」を、他の誰よりも近くで感じることができます。
+                      </p>
+                    </div>
+                    <p className="font-bold text-slate-800 dark:text-white text-xl md:text-2xl">
+                      技術を教えるのではなく、あなたの想いをスッキリ整理（言語化）し、最短距離で形にする。
+                    </p>
+                    <div className="pt-4">
+                      <p className="text-slate-500 dark:text-slate-400">
+                        ただの「業者」ではなく、<br />
+                        あなたのビジネスを一番近くで応援する<br />
+                        <span className="text-slate-800 dark:text-white font-bold text-2xl">「並走者」でありたい</span>と願っています。
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </FadeInSection>
+          </div>
+        </section>
+
+        {/* --- Contact --- */}
+        <section id="contact" className="py-32 bg-slate-900 text-white text-center relative overflow-hidden">
+          <div className="max-w-4xl mx-auto px-6 relative z-10">
+            <FadeInSection>
+              <div className="inline-flex items-center gap-2 mb-8 px-4 py-2 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-sm font-bold">
+                <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></div> 30 MINUTES STRATEGY MEETING
+              </div>
+              <h2 className="text-4xl md:text-5xl font-black mb-8 leading-tight">まずは、30分の<br /><span className="text-rose-400">ワクワク作戦会議</span>（無料）から。</h2>
+              <div className="flex flex-col md:flex-row gap-6 justify-center items-center">
+                <button className="group px-12 py-5 bg-rose-500 hover:bg-rose-600 text-white rounded-full font-black text-lg shadow-2xl transition-all flex items-center gap-2">
+                  無料相談に申し込む <ArrowRight size={22} className="group-hover:translate-x-1 transition-transform" />
+                </button>
+              </div>
+            </FadeInSection>
+          </div>
+        </section>
+
+        {/* --- Footer --- */}
+        <footer className="py-12 bg-slate-950 text-slate-600 text-center text-sm border-t border-slate-900">
+          <div className="max-w-6xl mx-auto px-4">
+            <div className="font-bold text-rose-400/50 mb-6 tracking-widest text-lg">NOW&GLOW</div>
+            <p>&copy; 2024 NOW&GLOW. All rights reserved.</p>
+          </div>
+        </footer>
+
+      </div>
+    </div>
+  );
+}
